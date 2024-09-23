@@ -12,30 +12,25 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final database = AppDatabase();
+  //final daoPriority = TodoPriorityDao(database);
   final daoItems = TodoItemsDao(database);
+  //final items = await database.allTodoItems;
 
-  final newItem = await daoItems.addTodoItem(
-    TodoItemsCompanion.insert(title: 'new task', description: 'content')
-  );
+  //final priority = await daoPriority.findByDescription('Done');
 
-  final foundItem = await daoItems.findByTitle('new task');
-  print('new item: $foundItem');
+  // final item1 = await daoItems.findById(12);
+  // final item2 = await daoItems.findById(13);
+  //
+  // daoItems.updateWhereId(12, item1.copyWith(priority: const Value<int?>(3)));
+  // daoItems.updateWhereId(13, item2.copyWith(priority: const Value<int?>(3)));
 
-  final updatedItem = await daoItems.updateWhereId(
-    foundItem.id,
-    foundItem.copyWith(title: 'task with updated title')
-  );
+  // for(int i=0;i<items.length;i++){
+  //   print(items[i]);
+  // }
+  final items2 = await daoItems.getItemsWithCertainCategoryAndPriority('Done', 'important');
 
-  final foundItem2 = await daoItems.findByTitle('task with updated title');
-  print('updated item: $foundItem2');
-
-  final deletedItem = await daoItems.deleteItemWithTitle('task with updated title');
-  print('deleted item: $deletedItem');
-
-  print('importantItems: ');
-  final importantItems = await daoItems.getItemsWithCertainCategory('important');
-  for(int i=0;i<importantItems.length;i++){
-    print('${importantItems[i].item} - ${importantItems[i].category} ');
+  for(int i=0;i<items2.length;i++){
+    print('${items2[i].priority} = ${items2[i].category} = ${items2[i].item}');
   }
 }
 

@@ -10,6 +10,13 @@ class ItemsWithCategoryDescription{
   final TodoCategoryData category;
 }
 
+class ItemsWithCategoryAndPriority{
+  ItemsWithCategoryAndPriority(this.item,this.category,this.priority);
+  final TodoItem item;
+  final TodoCategoryData category;
+  final TodoPriorityData priority;
+}
+
 @DriftAccessor(tables: [TodoItems])
 class TodoItemsDao extends DatabaseAccessor<AppDatabase> with _$TodoItemsDaoMixin {
   TodoItemsDao(AppDatabase db) : super(db);
@@ -71,6 +78,23 @@ class TodoItemsDao extends DatabaseAccessor<AppDatabase> with _$TodoItemsDaoMixi
 
     return query.map((row){
       return ItemsWithCategoryDescription(row.readTable(todoItems), row.readTable(todoCategory));
+    }).get();
+  }
+
+  Future<List<ItemsWithCategoryAndPriority>> getItemsWithCertainCategoryAndPriority(String priority, String category){
+    final query = (select(todoItems).join([
+      innerJoin(todoCategory, todoCategory.id.equalsExp(todoItems.category)),
+      innerJoin(todoPriority, todoPriority.id.equalsExp(todoItems.priority)),
+    ]))
+      ..where(todoCategory.description.equals(category))
+      ..where(todoPriority.description.equals(priority));
+
+    return query.map((row){
+      return ItemsWithCategoryAndPriority(
+          row.readTable(todoItems),
+          row.readTable(todoCategory),
+          row.readTable(todoPriority),
+      );
     }).get();
   }
 
