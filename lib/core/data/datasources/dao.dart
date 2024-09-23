@@ -43,12 +43,12 @@ class TodoItemsDao extends DatabaseAccessor<AppDatabase> with _$TodoItemsDaoMixi
     return (select(todoItems)..where((t) => t.id.equals(id))).getSingle();
   }
 
-  Future<List<TodoItem>> findByCategory(int category){
-    return (select(todoItems)..where((t) => t.category.equals(category))).get();
-  }
-
   Future<List<TodoItem>> findByCategoryId(int id){
     return (select(todoItems)..where((t) => t.category.equals(id))).get();
+  }
+
+  Future<TodoItem> findByTitle(String title){
+    return (select(todoItems)..where((t)=>t.title.equals(title))).getSingle();
   }
 
   // ==============================================================================
@@ -77,15 +77,15 @@ class TodoItemsDao extends DatabaseAccessor<AppDatabase> with _$TodoItemsDaoMixi
   // ==============================================================================
   // update
   // ==============================================================================
-  Future<void> updateWhereId(int id, TodoItem target){
+  Future<List<TodoItem>> updateWhereId(int id, TodoItem target){
     return (update(todoItems)..where((t) => t.id.equals(id))).writeReturning(target);
   }
 
   // ==============================================================================
   // insert
   // ==============================================================================
-  Future<void> addTodoItem(TodoItemsCompanion item){
-    return into(todoItems).insert(item);
+  Future<TodoItem> addTodoItem(TodoItemsCompanion item){
+    return into(todoItems).insertReturning(item);
   }
 
   Future<void> addItems(List<TodoItemsCompanion> items,{void Function()? whenComplete}){

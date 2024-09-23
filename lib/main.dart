@@ -12,28 +12,31 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final database = AppDatabase();
-  final daoCategory = TodoCategoryDao(database);
   final daoItems = TodoItemsDao(database);
 
-  final category = await daoCategory.insert('useless');
+  final newItem = await daoItems.addTodoItem(
+    TodoItemsCompanion.insert(title: 'new task', content: 'content')
+  );
 
-  await daoItems.addItems([
-    TodoItemsCompanion.insert(title: 'useless1', content: 'useless1', category: Value<int>(category.id)),
-    TodoItemsCompanion.insert(title: 'useless2', content: 'useless1', category: Value<int>(category.id)),
-    TodoItemsCompanion.insert(title: 'useless3', content: 'useless1', category: Value<int>(category.id)),
-  ]);
+  final foundItem = await daoItems.findByTitle('new task');
+  print('new item: $foundItem');
 
-  print('\n\n${await database.allTodoCategory} \n\n ${await database.allTodoItems}\n\n');
+  final updatedItem = await daoItems.updateWhereId(
+    foundItem.id,
+    foundItem.copyWith(title: 'task with updated title')
+  );
 
-  await daoCategory.deleteCategoryWithDescription('useless', whenComplete: (){
-    print('deleted category');
-  });
+  final foundItem2 = await daoItems.findByTitle('task with updated title');
+  print('updated item: $foundItem2');
 
-  final deletedItems = await daoItems.deleteItemsWithTitles(['useless1', 'useless2', 'useless3'], whenComplete: (){
-    print('deleted items');
-  });
-  print(deletedItems);
-  print('\n\n${await database.allTodoCategory} \n\n ${await database.allTodoItems}\n\n');
+  final deletedItem = await daoItems.deleteItemWithTitle('task with updated title');
+  print('deleted item: $deletedItem');
+
+  print('importantItems: ');
+  final importantItems = await daoItems.getItemsWithCertainCategory('important');
+  for(int i=0;i<importantItems.length;i++){
+    print('${importantItems[i].item} - ${importantItems[i].category} ');
+  }
 }
 
 // class MyApp extends StatelessWidget {
