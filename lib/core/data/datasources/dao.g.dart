@@ -5,10 +5,12 @@ part of 'dao.dart';
 // ignore_for_file: type=lint
 mixin _$TodoItemsDaoMixin on DatabaseAccessor<AppDatabase> {
   $TodoCategoryTable get todoCategory => attachedDatabase.todoCategory;
+  $TodoPriorityTable get todoPriority => attachedDatabase.todoPriority;
   $TodoItemsTable get todoItems => attachedDatabase.todoItems;
 }
 mixin _$TodoCategoryDaoMixin on DatabaseAccessor<AppDatabase> {
   $TodoCategoryTable get todoCategory => attachedDatabase.todoCategory;
+  $TodoPriorityTable get todoPriority => attachedDatabase.todoPriority;
   $TodoItemsTable get todoItems => attachedDatabase.todoItems;
 }
 mixin _$TodoPriorityDaoMixin on DatabaseAccessor<AppDatabase> {

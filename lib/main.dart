@@ -15,7 +15,7 @@ void main() async {
   final daoItems = TodoItemsDao(database);
 
   final newItem = await daoItems.addTodoItem(
-    TodoItemsCompanion.insert(title: 'new task', content: 'content')
+    TodoItemsCompanion.insert(title: 'new task', description: 'content')
   );
 
   final foundItem = await daoItems.findByTitle('new task');

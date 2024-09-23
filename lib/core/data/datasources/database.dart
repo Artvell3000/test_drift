@@ -15,9 +15,9 @@ part 'database.g.dart';
 class TodoItems extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get title => text().unique().withLength(min: 6, max: 32)();
-  TextColumn get content => text().named('body')();
+  TextColumn get description => text().named('body')();
   IntColumn get category => integer().nullable().references(TodoCategory, #id)();
-  DateTimeColumn get createdAt => dateTime().nullable()();
+  IntColumn get priority => integer().nullable().references(TodoPriority, #id)();
 }
 
 class TodoCategory extends Table {
@@ -35,7 +35,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration {
@@ -43,14 +43,25 @@ class AppDatabase extends _$AppDatabase {
       onCreate: (Migrator m) async {
         await m.createAll();
       },
-      onUpgrade: (Migrator m,old,vers) async {
-        if(old == 1 && vers == 2){
-          await m.createAll();
+      onUpgrade: (Migrator m,old,now) async {
+        if(old < 2){
+          await m.create(todoPriority);
         }
+        if(old < 3){
+          await m.addColumn(todoItems, todoItems.priority);
+        }
+        if(old < 4){
+          // удаление столбца с датой создания
+          // переименование столбца content в description
+          await m.alterTable(TableMigration(todoItems));
+        }
+      },
+      beforeOpen: (d) async {
 
       }
     );
   }
+
 
   Future<List<TodoItem>> get allTodoItems => select(todoItems).get();
   Future<List<TodoCategoryData>> get allTodoCategory => select(todoCategory).get();
