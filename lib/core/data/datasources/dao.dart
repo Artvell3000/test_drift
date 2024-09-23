@@ -127,8 +127,8 @@ class TodoCategoryDao extends DatabaseAccessor<AppDatabase> with _$TodoCategoryD
   // ==============================================================================
   // insert
   // ==============================================================================
-  Future<void> insert(String description){
-    return into(todoCategory).insert(TodoCategoryCompanion(description: Value<String>(description)));
+  Future<TodoCategoryData> insert(String description){
+    return into(todoCategory).insertReturning(TodoCategoryCompanion(description: Value<String>(description)));
   }
 
   Future<void> insertAll(List<String> descriptions) async{

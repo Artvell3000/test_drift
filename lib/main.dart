@@ -15,8 +15,7 @@ void main() async {
   final daoCategory = TodoCategoryDao(database);
   final daoItems = TodoItemsDao(database);
 
-  await daoCategory.insert('useless');
-  final category = await daoCategory.findByDescription('useless');
+  final category = await daoCategory.insert('useless');
 
   await daoItems.addItems([
     TodoItemsCompanion.insert(title: 'useless1', content: 'useless1', category: Value<int>(category.id)),
