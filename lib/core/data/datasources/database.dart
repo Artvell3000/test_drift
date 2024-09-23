@@ -18,6 +18,7 @@ class TodoItems extends Table {
   TextColumn get description => text().named('body')();
   IntColumn get category => integer().nullable().references(TodoCategory, #id)();
   IntColumn get priority => integer().nullable().references(TodoPriority, #id)();
+  TextColumn get comment => text().nullable()();
 }
 
 class TodoCategory extends Table {
@@ -35,7 +36,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration {
@@ -54,6 +55,14 @@ class AppDatabase extends _$AppDatabase {
           // удаление столбца с датой создания
           // переименование столбца content в description
           await m.alterTable(TableMigration(todoItems));
+        }
+        if(old < 5){
+          await m.addColumn(todoItems, todoItems.comment);
+        }
+        if(old < 6){
+          await m.alterTable(TableMigration(todoItems, columnTransformer: {
+            todoItems.comment : todoItems.comment.cast<String>()
+          }));
         }
       },
       beforeOpen: (d) async {

@@ -423,9 +423,15 @@ class $TodoItemsTable extends TodoItems
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('REFERENCES todo_priority (id)'));
+  static const VerificationMeta _commentMeta =
+      const VerificationMeta('comment');
+  @override
+  late final GeneratedColumn<String> comment = GeneratedColumn<String>(
+      'comment', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, title, description, category, priority];
+      [id, title, description, category, priority, comment];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -459,6 +465,10 @@ class $TodoItemsTable extends TodoItems
       context.handle(_priorityMeta,
           priority.isAcceptableOrUnknown(data['priority']!, _priorityMeta));
     }
+    if (data.containsKey('comment')) {
+      context.handle(_commentMeta,
+          comment.isAcceptableOrUnknown(data['comment']!, _commentMeta));
+    }
     return context;
   }
 
@@ -478,6 +488,8 @@ class $TodoItemsTable extends TodoItems
           .read(DriftSqlType.int, data['${effectivePrefix}category']),
       priority: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}priority']),
+      comment: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}comment']),
     );
   }
 
@@ -493,12 +505,14 @@ class TodoItem extends DataClass implements Insertable<TodoItem> {
   final String description;
   final int? category;
   final int? priority;
+  final String? comment;
   const TodoItem(
       {required this.id,
       required this.title,
       required this.description,
       this.category,
-      this.priority});
+      this.priority,
+      this.comment});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -510,6 +524,9 @@ class TodoItem extends DataClass implements Insertable<TodoItem> {
     }
     if (!nullToAbsent || priority != null) {
       map['priority'] = Variable<int>(priority);
+    }
+    if (!nullToAbsent || comment != null) {
+      map['comment'] = Variable<String>(comment);
     }
     return map;
   }
@@ -525,6 +542,9 @@ class TodoItem extends DataClass implements Insertable<TodoItem> {
       priority: priority == null && nullToAbsent
           ? const Value.absent()
           : Value(priority),
+      comment: comment == null && nullToAbsent
+          ? const Value.absent()
+          : Value(comment),
     );
   }
 
@@ -537,6 +557,7 @@ class TodoItem extends DataClass implements Insertable<TodoItem> {
       description: serializer.fromJson<String>(json['description']),
       category: serializer.fromJson<int?>(json['category']),
       priority: serializer.fromJson<int?>(json['priority']),
+      comment: serializer.fromJson<String?>(json['comment']),
     );
   }
   @override
@@ -548,6 +569,7 @@ class TodoItem extends DataClass implements Insertable<TodoItem> {
       'description': serializer.toJson<String>(description),
       'category': serializer.toJson<int?>(category),
       'priority': serializer.toJson<int?>(priority),
+      'comment': serializer.toJson<String?>(comment),
     };
   }
 
@@ -556,13 +578,15 @@ class TodoItem extends DataClass implements Insertable<TodoItem> {
           String? title,
           String? description,
           Value<int?> category = const Value.absent(),
-          Value<int?> priority = const Value.absent()}) =>
+          Value<int?> priority = const Value.absent(),
+          Value<String?> comment = const Value.absent()}) =>
       TodoItem(
         id: id ?? this.id,
         title: title ?? this.title,
         description: description ?? this.description,
         category: category.present ? category.value : this.category,
         priority: priority.present ? priority.value : this.priority,
+        comment: comment.present ? comment.value : this.comment,
       );
   TodoItem copyWithCompanion(TodoItemsCompanion data) {
     return TodoItem(
@@ -572,6 +596,7 @@ class TodoItem extends DataClass implements Insertable<TodoItem> {
           data.description.present ? data.description.value : this.description,
       category: data.category.present ? data.category.value : this.category,
       priority: data.priority.present ? data.priority.value : this.priority,
+      comment: data.comment.present ? data.comment.value : this.comment,
     );
   }
 
@@ -582,13 +607,15 @@ class TodoItem extends DataClass implements Insertable<TodoItem> {
           ..write('title: $title, ')
           ..write('description: $description, ')
           ..write('category: $category, ')
-          ..write('priority: $priority')
+          ..write('priority: $priority, ')
+          ..write('comment: $comment')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, title, description, category, priority);
+  int get hashCode =>
+      Object.hash(id, title, description, category, priority, comment);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -597,7 +624,8 @@ class TodoItem extends DataClass implements Insertable<TodoItem> {
           other.title == this.title &&
           other.description == this.description &&
           other.category == this.category &&
-          other.priority == this.priority);
+          other.priority == this.priority &&
+          other.comment == this.comment);
 }
 
 class TodoItemsCompanion extends UpdateCompanion<TodoItem> {
@@ -606,12 +634,14 @@ class TodoItemsCompanion extends UpdateCompanion<TodoItem> {
   final Value<String> description;
   final Value<int?> category;
   final Value<int?> priority;
+  final Value<String?> comment;
   const TodoItemsCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
     this.description = const Value.absent(),
     this.category = const Value.absent(),
     this.priority = const Value.absent(),
+    this.comment = const Value.absent(),
   });
   TodoItemsCompanion.insert({
     this.id = const Value.absent(),
@@ -619,6 +649,7 @@ class TodoItemsCompanion extends UpdateCompanion<TodoItem> {
     required String description,
     this.category = const Value.absent(),
     this.priority = const Value.absent(),
+    this.comment = const Value.absent(),
   })  : title = Value(title),
         description = Value(description);
   static Insertable<TodoItem> custom({
@@ -627,6 +658,7 @@ class TodoItemsCompanion extends UpdateCompanion<TodoItem> {
     Expression<String>? description,
     Expression<int>? category,
     Expression<int>? priority,
+    Expression<String>? comment,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -634,6 +666,7 @@ class TodoItemsCompanion extends UpdateCompanion<TodoItem> {
       if (description != null) 'body': description,
       if (category != null) 'category': category,
       if (priority != null) 'priority': priority,
+      if (comment != null) 'comment': comment,
     });
   }
 
@@ -642,13 +675,15 @@ class TodoItemsCompanion extends UpdateCompanion<TodoItem> {
       Value<String>? title,
       Value<String>? description,
       Value<int?>? category,
-      Value<int?>? priority}) {
+      Value<int?>? priority,
+      Value<String?>? comment}) {
     return TodoItemsCompanion(
       id: id ?? this.id,
       title: title ?? this.title,
       description: description ?? this.description,
       category: category ?? this.category,
       priority: priority ?? this.priority,
+      comment: comment ?? this.comment,
     );
   }
 
@@ -670,6 +705,9 @@ class TodoItemsCompanion extends UpdateCompanion<TodoItem> {
     if (priority.present) {
       map['priority'] = Variable<int>(priority.value);
     }
+    if (comment.present) {
+      map['comment'] = Variable<String>(comment.value);
+    }
     return map;
   }
 
@@ -680,7 +718,8 @@ class TodoItemsCompanion extends UpdateCompanion<TodoItem> {
           ..write('title: $title, ')
           ..write('description: $description, ')
           ..write('category: $category, ')
-          ..write('priority: $priority')
+          ..write('priority: $priority, ')
+          ..write('comment: $comment')
           ..write(')'))
         .toString();
   }
@@ -1006,6 +1045,7 @@ typedef $$TodoItemsTableCreateCompanionBuilder = TodoItemsCompanion Function({
   required String description,
   Value<int?> category,
   Value<int?> priority,
+  Value<String?> comment,
 });
 typedef $$TodoItemsTableUpdateCompanionBuilder = TodoItemsCompanion Function({
   Value<int> id,
@@ -1013,6 +1053,7 @@ typedef $$TodoItemsTableUpdateCompanionBuilder = TodoItemsCompanion Function({
   Value<String> description,
   Value<int?> category,
   Value<int?> priority,
+  Value<String?> comment,
 });
 
 final class $$TodoItemsTableReferences
@@ -1066,6 +1107,11 @@ class $$TodoItemsTableFilterComposer
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
 
+  ColumnFilters<String> get comment => $state.composableBuilder(
+      column: $state.table.comment,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
   $$TodoCategoryTableFilterComposer get category {
     final $$TodoCategoryTableFilterComposer composer = $state.composerBuilder(
         composer: this,
@@ -1106,6 +1152,11 @@ class $$TodoItemsTableOrderingComposer
 
   ColumnOrderings<String> get description => $state.composableBuilder(
       column: $state.table.description,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get comment => $state.composableBuilder(
+      column: $state.table.comment,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 
@@ -1159,6 +1210,7 @@ class $$TodoItemsTableTableManager extends RootTableManager<
             Value<String> description = const Value.absent(),
             Value<int?> category = const Value.absent(),
             Value<int?> priority = const Value.absent(),
+            Value<String?> comment = const Value.absent(),
           }) =>
               TodoItemsCompanion(
             id: id,
@@ -1166,6 +1218,7 @@ class $$TodoItemsTableTableManager extends RootTableManager<
             description: description,
             category: category,
             priority: priority,
+            comment: comment,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -1173,6 +1226,7 @@ class $$TodoItemsTableTableManager extends RootTableManager<
             required String description,
             Value<int?> category = const Value.absent(),
             Value<int?> priority = const Value.absent(),
+            Value<String?> comment = const Value.absent(),
           }) =>
               TodoItemsCompanion.insert(
             id: id,
@@ -1180,6 +1234,7 @@ class $$TodoItemsTableTableManager extends RootTableManager<
             description: description,
             category: category,
             priority: priority,
+            comment: comment,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (
